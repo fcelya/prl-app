@@ -1,0 +1,39 @@
+﻿1. IDEA
+a. Aplicación de alertas No existe patente acutalmente para esto
+de smartwatch/pulsera de actividad para trabajadores manuales intensivos capaz de prevenir x patologías, de manera que el número de accidentes ocurridos es menor. 
+
+b. Desarrollos necesarios
+i. Modelo preventivo FERNANDO
+ii. Modelo predictivo JUAN
+iii. Aplicación cliente: o en smartwatch/o en un servidor FERNANDO
+iv. Backend y conexión LTE JUAN
+v. Aplicación web para el capataz JUAN
+
+c. Qué pulsera utilizar: FERNANDO
+
+d. What the apple watch can help prevent:
+i. Already working
+ii.    Falls
+iii.    Elevated heart rhythm kind of
+iv.    Arritmias
+v. Can work
+vi.    Elevated sounds
+vii.    Infartos?
+viii.    Heat stroke? (Normalmente se detecta con core body temperature)
+ix.    Melanomas
+x.    Exhaustion
+xi.    Loss of blood?
+xii.    Accident which spikes heart rhythm
+xiii.    Hot/cold
+xiv.    Movimientos repetitivos
+xv.    Electrocuciones?
+xvi.    Demasiado tiempo de pie
+
+
+2. LOGISTICA
+a. Coordinación: Github + reuniones 1/semana
+
+
+3. NEXT STEPS
+a. JUAN: Hablar con tu madre sobre cosas a prevenir, Backend
+b. Analizar hardwares disponibles + tabla comparativa, Research el modelo preventivo
