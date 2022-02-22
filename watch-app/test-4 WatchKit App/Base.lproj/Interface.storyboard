@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="19529" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+    <device id="watch38"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="19514"/>
+    </dependencies>
+    <scenes>
+        <!--Interface Controller-->
+        <scene sceneID="aou-V4-d1y">
+            <objects>
+                <controller id="AgC-eL-Hgc" customClass="InterfaceController" customModule="test_4_WatchKit_App" customModuleProvider="target">
+                    <items>
+                        <group width="1" height="0.5" alignment="left" id="lME-PD-GI7">
+                            <items>
+                                <label alignment="left" verticalAlignment="center" text="BPM:" id="jyh-MC-mHJ"/>
+                                <label alignment="right" verticalAlignment="center" text="---" id="vik-iC-UEu"/>
+                            </items>
+                        </group>
+                        <group width="1" height="0.5" alignment="left" id="VBE-pI-xOq">
+                            <items>
+                                <button width="1" height="1" alignment="left" title="Button" id="ldB-XR-Z3L">
+                                    <connections>
+                                        <action selector="buttonPressed" destination="AgC-eL-Hgc" id="qKG-d3-WUI"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                    </items>
+                    <connections>
+                        <outlet property="bpmLabel" destination="vik-iC-UEu" id="2Gl-sq-j47"/>
+                        <outlet property="startStopButton" destination="ldB-XR-Z3L" id="fJt-Qa-b9p"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="-16" y="-6"/>
+        </scene>
+    </scenes>
+</document>
