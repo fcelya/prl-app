@@ -1,0 +1,19 @@
+Qué necesitamos medir
+- Ritmo Cardiaco
+- Presión Arterial
+- Glucosa?
+- Saturación Sanguínea
+- Exposición Solar
+- Horas de pie/sentado
+
+Next steps
+APP
+- Iniciar workout leer cerrar esperar para no drenar la batería
+- Terminar de leer todo lo que queremos leer
+- Meter prompt para hacer electro
+- JSON genérico
+- Meter alerta de caídas implementado APPLE
+BACKEND
+- A currar
+REUNIÓN CON JULIO
+- Cerrar reunión cuando responda
