@@ -26,6 +26,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     var state: HKWorkoutSessionState = .notStarted
     // Access point for all data managed by HealthKit.
     let healthStore = HKHealthStore()
+    
+    var ECG: HKElectrocardiogram?
 
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
@@ -51,7 +53,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!,
             HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
             HKQuantityType.quantityType(forIdentifier: .respiratoryRate)!,
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
+            HKObjectType.electrocardiogramType()
         ]
         //have to add correlationtype.bloodpressure, categorytype.irregularheartrythm,
         //categorytype.highheartrateevent, categorytype.lowheartrateevent, electrocardiogramtype
@@ -200,39 +203,47 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     }
     
     func initWorkout() {
-            let configuration = HKWorkoutConfiguration()
-            configuration.activityType = .crossTraining
-            configuration.locationType = .indoor
-            
-            do {
-                session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
-                builder = session.associatedWorkoutBuilder()
-            } catch {
-                fatalError("Unable to create the workout session!")
-            }
-            
-            // Setup session and builder.
-            session.delegate = self
-            builder.delegate = self
-            
-            /// Set the workout builder's data source.
-            builder.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore,
-                                                         workoutConfiguration: configuration)
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = .crossTraining
+        configuration.locationType = .indoor
+        
+        do {
+            session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+            builder = session.associatedWorkoutBuilder()
+        } catch {
+            fatalError("Unable to create the workout session!")
         }
+        
+        // Setup session and builder.
+        session.delegate = self
+        builder.delegate = self
+        
+        /// Set the workout builder's data source.
+        builder.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore,
+                                                     workoutConfiguration: configuration)
+    }
     
     
     func startWorkout() {
-            // Initialize our workout
-            initWorkout()
-            
-            // Start the workout session and begin data collection
-            session.startActivity(with: Date())
-            builder.beginCollection(withStart: Date()) { (succ, error) in
-                if !succ {
-                    fatalError("Error beginning collection from builder: \(String(describing: error)))")
-                }
+        // Initialize our workout
+        initWorkout()
+        
+        //Get ECG
+        ECG = requestECG()
+        if(ECG == nil){
+            print("[ECG]: No ECG data available")
+        }else{
+            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
+        }
+        
+        // Start the workout session and begin data collection
+        session.startActivity(with: Date())
+        builder.beginCollection(withStart: Date()) { (succ, error) in
+            if !succ {
+                fatalError("Error beginning collection from builder: \(String(describing: error)))")
             }
         }
+    }
     
     
     func stopWorkout() {
@@ -280,6 +291,39 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func requestECG() -> HKElectrocardiogram? {
+        // Create the electrocardiogram sample type.
+        let ecgType = HKObjectType.electrocardiogramType()
+        var latestECG: HKElectrocardiogram?
+
+        // Query for electrocardiogram samples
+        let ecgQuery = HKSampleQuery(sampleType: ecgType,
+                                     predicate: nil,
+                                     limit: HKObjectQueryNoLimit,
+                                     sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                // Handle the error here.
+                fatalError("*** An error occurred \(error.localizedDescription) ***")
+            }
+            
+            guard let ecgSamples = samples as? [HKElectrocardiogram] else {
+                fatalError("*** Unable to convert \(String(describing: samples)) to [HKElectrocardiogram] ***")
+            }
+            if (latestECG != nil){
+                latestECG = ecgSamples[0]
+            }
+            
+//            for sample in ecgSamples {
+//                 Handle the samples here.
+//
+//            }
+        }
+
+        // Execute the query.
+        healthStore.execute(ecgQuery)
+        return latestECG
     }
     
         
