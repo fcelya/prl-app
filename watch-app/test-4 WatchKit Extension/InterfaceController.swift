@@ -26,6 +26,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     var state: HKWorkoutSessionState = .notStarted
     // Access point for all data managed by HealthKit.
     let healthStore = HKHealthStore()
+    
+    var ECG: HKElectrocardiogram?
 
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
@@ -41,8 +43,21 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         let typesToRead: Set = [
             HKQuantityType.quantityType(forIdentifier: .heartRate)!,
             HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+            HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!,
+            HKQuantityType.quantityType(forIdentifier: .appleStandTime)!,
+            HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness)!,
+            HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure)!,
+            HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!,
+            HKQuantityType.quantityType(forIdentifier: .oxygenSaturation)!,
+            HKQuantityType.quantityType(forIdentifier: .bodyTemperature)!,
+            HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!,
+            HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!,
+            HKQuantityType.quantityType(forIdentifier: .respiratoryRate)!,
+            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!,
+            HKObjectType.electrocardiogramType()
         ]
+        //have to add correlationtype.bloodpressure, categorytype.irregularheartrythm,
+        //categorytype.highheartrateevent, categorytype.lowheartrateevent, electrocardiogramtype
         
         healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { (success, error) in if !success {
                 fatalError("Error requesting authorization from health store: \(String(describing: error)))")
@@ -69,11 +84,27 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     func workoutBuilder(_ workoutBuilder: HKLiveWorkoutBuilder, didCollectDataOf collectedTypes: Set<HKSampleType>) {
         
         var HRstringValue: String = "0"
-        var EBstringValue: String = "0"
+        var AEBstringValue: String = "0"
+        var BEBstringValue: String = "0"
         var DWstringValue: String = "0"
-        let heartRateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+        var ASTstringValue: String = "0"
+        var AWSstringValue: String = "0"
+        var EAEstringValue: String = "0"
+        var HRVstringValue: String = "0"
+        var OSstringValue: String = "0"
+        var BTstringValue: String = "0"
+        var BPSstringValue: String = "0"
+        var BPDstringValue: String = "0"
+        var RRstringValue: String = "0"
+        let rateUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
         let energyUnit = HKUnit.largeCalorie()
         let distanceUnit = HKUnit.meter()
+        let timeUnit = HKUnit.second()
+        let percentUnit = HKUnit.percent()
+        let soundUnit = HKUnit.decibelAWeightedSoundPressureLevel()
+        let temperatureUnit = HKUnit.degreeCelsius()
+        let pressureUnit = HKUnit.pascal()
+        
         
         
         for type in collectedTypes {
@@ -85,16 +116,56 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             switch quantityType {
                 case HKQuantityType.quantityType(forIdentifier: .heartRate):
                     let statistics = workoutBuilder.statistics(for: quantityType)
-                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: heartRateUnit)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
                     HRstringValue = String(Int(Double(round(1 * value!) / 1)))
                 case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
-                    EBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    AEBstringValue = String(Int(Double(round(1 * value!) / 1)))
                 case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: distanceUnit)
                     DWstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
+                    BEBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .appleStandTime):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
+                    ASTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
+                    AWSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: soundUnit)
+                    EAEstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
+                    HRVstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .oxygenSaturation):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
+                    OSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .bodyTemperature):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: temperatureUnit)
+                    BTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
+                    BPSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
+                    BPDstringValue = String(Int(Double(round(1 * value!) / 1)))
+                case HKQuantityType.quantityType(forIdentifier: .respiratoryRate):
+                    let statistics = workoutBuilder.statistics(for: quantityType)
+                    let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
+                    RRstringValue = String(Int(Double(round(1 * value!) / 1)))
                 default:
                     return
             }
@@ -104,12 +175,22 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 self.bpmLabel.setText(HRstringValue)
             }
             print("[workoutBuilder] Heart Rate: \(String(describing: HRstringValue))")
-            print("[workoutBuilder] Energy Burned: \(String(describing: EBstringValue))")
+            print("[workoutBuilder] Active Energy Burned: \(String(describing: AEBstringValue))")
+            print("[workoutBuilder] Basal Energy Burned: \(String(describing: BEBstringValue))")
             print("[workoutBuilder] Distance Walked: \(String(describing: DWstringValue))")
+            print("[workoutBuilder] Apple Stand Time: \(String(describing: ASTstringValue))")
+            print("[workoutBuilder] Apple Walking Steadiness: \(String(describing: AWSstringValue))")
+            print("[workoutBuilder] Environmental Audio Exposure: \(String(describing: EAEstringValue))")
+            print("[workoutBuilder] Heart Rate Variability: \(String(describing: HRVstringValue))")
+            print("[workoutBuilder] Oxygen Saturation: \(String(describing: OSstringValue))")
+            print("[workoutBuilder] Body Temperature: \(String(describing: BTstringValue))")
+            print("[workoutBuilder] Blood Pressure Systolic: \(String(describing: BPSstringValue))")
+            print("[workoutBuilder] Blood Pressure Dyastolic: \(String(describing: BPDstringValue))")
+            print("[workoutBuilder] Respiratory Rate: \(String(describing: RRstringValue))")
             //send data to server here
             let info: Dictionary = [
                 "HeartRate": Int(HRstringValue)!,
-                "Energy Burned": Int(EBstringValue)!,
+                "Energy Burned": Int(AEBstringValue)!,
                 "Distance Walked": Int(DWstringValue)!]
             postHTTP(info: info as Dictionary<String, Any> ,url: serverUrl)
         }
@@ -122,39 +203,47 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     }
     
     func initWorkout() {
-            let configuration = HKWorkoutConfiguration()
-            configuration.activityType = .crossTraining
-            configuration.locationType = .indoor
-            
-            do {
-                session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
-                builder = session.associatedWorkoutBuilder()
-            } catch {
-                fatalError("Unable to create the workout session!")
-            }
-            
-            // Setup session and builder.
-            session.delegate = self
-            builder.delegate = self
-            
-            /// Set the workout builder's data source.
-            builder.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore,
-                                                         workoutConfiguration: configuration)
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = .crossTraining
+        configuration.locationType = .indoor
+        
+        do {
+            session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+            builder = session.associatedWorkoutBuilder()
+        } catch {
+            fatalError("Unable to create the workout session!")
         }
+        
+        // Setup session and builder.
+        session.delegate = self
+        builder.delegate = self
+        
+        /// Set the workout builder's data source.
+        builder.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore,
+                                                     workoutConfiguration: configuration)
+    }
     
     
     func startWorkout() {
-            // Initialize our workout
-            initWorkout()
-            
-            // Start the workout session and begin data collection
-            session.startActivity(with: Date())
-            builder.beginCollection(withStart: Date()) { (succ, error) in
-                if !succ {
-                    fatalError("Error beginning collection from builder: \(String(describing: error)))")
-                }
+        // Initialize our workout
+        initWorkout()
+        
+        //Get ECG
+        ECG = requestECG()
+        if(ECG == nil){
+            print("[ECG]: No ECG data available")
+        }else{
+            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
+        }
+        
+        // Start the workout session and begin data collection
+        session.startActivity(with: Date())
+        builder.beginCollection(withStart: Date()) { (succ, error) in
+            if !succ {
+                fatalError("Error beginning collection from builder: \(String(describing: error)))")
             }
         }
+    }
     
     
     func stopWorkout() {
@@ -202,6 +291,39 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func requestECG() -> HKElectrocardiogram? {
+        // Create the electrocardiogram sample type.
+        let ecgType = HKObjectType.electrocardiogramType()
+        var latestECG: HKElectrocardiogram?
+
+        // Query for electrocardiogram samples
+        let ecgQuery = HKSampleQuery(sampleType: ecgType,
+                                     predicate: nil,
+                                     limit: HKObjectQueryNoLimit,
+                                     sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                // Handle the error here.
+                fatalError("*** An error occurred \(error.localizedDescription) ***")
+            }
+            
+            guard let ecgSamples = samples as? [HKElectrocardiogram] else {
+                fatalError("*** Unable to convert \(String(describing: samples)) to [HKElectrocardiogram] ***")
+            }
+            if (latestECG != nil){
+                latestECG = ecgSamples[0]
+            }
+            
+//            for sample in ecgSamples {
+//                 Handle the samples here.
+//
+//            }
+        }
+
+        // Execute the query.
+        healthStore.execute(ecgQuery)
+        return latestECG
     }
     
         
