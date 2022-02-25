@@ -8,6 +8,7 @@
 import WatchKit
 import Foundation
 import HealthKit
+import CoreMotion
 
 
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
@@ -15,9 +16,14 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     @IBOutlet var startStopButton: WKInterfaceButton!
     @IBOutlet var bpmLabel: WKInterfaceLabel!
     
+    //NETWORKING
     //Server url
     let serverUrl: URL = URL(string: "https://ptsv2.com/t/uf53u-1645038057/post")!
     
+    //MOVEMENT
+    let motion = CMMotionManager()
+    
+    //HEALTH INFO
     // Our workout session
     var session: HKWorkoutSession!
     // Live workout builder
@@ -26,11 +32,29 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     var state: HKWorkoutSessionState = .notStarted
     // Access point for all data managed by HealthKit.
     let healthStore = HKHealthStore()
-    
+    //ecg
     var ECG: HKElectrocardiogram?
 
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
+        super.awake(withContext: context)
+        //Start recollecting motion data
+        let queue = OperationQueue()
+        queue.name = "motionqueue"
+        queue.maxConcurrentOperationCount = 1
+        motion.deviceMotionUpdateInterval = 0.2
+        motion.startDeviceMotionUpdates(to: queue) { (data: CMDeviceMotion?, error: Error?) in
+            if error != nil {
+                            print("Encountered error: \(error!)")
+                        }
+            
+            if data != nil {
+                print("x: \(data!.userAcceleration.x)) y: \(data!.userAcceleration.y) z: \(data!.userAcceleration.z)")
+            }else{
+                print("[Accelerometer]: No Data")
+            }
+        }
+        
     }
     
     override func willActivate() {
@@ -243,6 +267,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 fatalError("Error beginning collection from builder: \(String(describing: error)))")
             }
         }
+        
     }
     
     
