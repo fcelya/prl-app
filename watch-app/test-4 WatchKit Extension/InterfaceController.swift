@@ -55,6 +55,15 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             }
         }
         
+        
+        //Check for motion data
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
+            if let data = self.motion.deviceMotion{
+                print("x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
+            }else{
+                print("[Motion]: No motion data available")
+            }
+        }
     }
     
     override func willActivate() {
@@ -218,14 +227,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 "Distance Walked": Int(DWstringValue)!]
             postHTTP(info: info as Dictionary<String, Any> ,url: serverUrl)
         }
-        
-        //Check for motion data
-        if let data = motion.deviceMotion{
-            print("x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
-        }else{
-            print("[Motion]: No motion data available")
-        }
     }
+        
     
     func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) {
         // Retreive the workout event.
