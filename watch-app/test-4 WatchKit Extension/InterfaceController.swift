@@ -84,6 +84,13 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         // Configure interface objects here.
         super.awake(withContext: context)
         
+        let healthDataCollected = true
+        let maxWorkoutTime = 30
+        let timeBetweenWorkouts = 60
+        
+        //Schedule workouts with timeIntervalSince1970
+        //___________________________________________________
+        
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
