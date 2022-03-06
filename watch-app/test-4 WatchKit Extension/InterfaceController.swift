@@ -47,6 +47,38 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     let healthStore = HKHealthStore()
     //ecg
     var ECG: HKElectrocardiogram?
+    
+    //CREATE DATA STRUCTURES
+    var ecgDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["ecg"]],
+                                                        "data": ["ecg": [],
+                                                                 "timestamp": []]]
+
+    var motionDict: Dictionary<String, [String: [Any]]> = ["type": ["type":["motion"]],
+                                                          "data": ["accx":[],
+                                                                   "accy":[],
+                                                                   "accz":[],
+                                                                   "gyrx":[],
+                                                                   "gyry":[],
+                                                                   "gyrz":[],
+                                                                   "grvx":[],
+                                                                   "grvy":[],
+                                                                   "grvz":[],
+                                                                   "timestamp":[]]]
+
+    var workoutDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["workout"]],
+                                                              "data": ["Heart Rate": [],
+                                                                       "Active Energy Burned": [],
+                                                                       "Basal Energy Burned": [],
+                                                                       "Apple Stand Time": [],
+                                                                       "Apple Walking Steadiness": [],
+                                                                       "Environmental Audio Exposure": [],
+                                                                       "Heart Rate Variability": [],
+                                                                       "Oxygen Saturation": [],
+                                                                       "Body Temperature": [],
+                                                                       "Blood Pressure Systolic": [],
+                                                                       "Blood Pressure Dyastolic": [],
+                                                                       "Respiratory Rate": [],
+                                                                       "Distance Walked": []]]
 
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
