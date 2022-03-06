@@ -210,54 +210,67 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
                     HRstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Heart Rate"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
                     AEBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Active Energy Burned"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: distanceUnit)
                     DWstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Basal Energy Burned"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
                     BEBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Distance Walked"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .appleStandTime):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
                     ASTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Apple Stand Time"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
                     AWSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Apple Walking Steadiness"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: soundUnit)
                     EAEstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Environmental Audio Exposure"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
                     HRVstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Heart Rate Variability"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .oxygenSaturation):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
                     OSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Oxygen Saturation"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bodyTemperature):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: temperatureUnit)
                     BTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Body Temperature"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
                     BPSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Blood Pressure Systolic"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
                     BPDstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Blood Pressure Dyastolic"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .respiratoryRate):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
                     RRstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Respiratory Rate"]!.append(Double(round(1 * value!) / 1))
                 default:
                     return
             }
