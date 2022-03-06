@@ -29,6 +29,8 @@
                     </items>
                     <connections>
                         <outlet property="bpmLabel" destination="vik-iC-UEu" id="2Gl-sq-j47"/>
+                        <outlet property="buttonGroup" destination="VBE-pI-xOq" id="54c-4z-ZlD"/>
+                        <outlet property="labelGroup" destination="lME-PD-GI7" id="Von-Yf-YS0"/>
                         <outlet property="startStopButton" destination="ldB-XR-Z3L" id="fJt-Qa-b9p"/>
                     </connections>
                 </controller>

@@ -9,12 +9,25 @@ import WatchKit
 import Foundation
 import HealthKit
 import CoreMotion
+import UIKit
 
 
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
     
     @IBOutlet var startStopButton: WKInterfaceButton!
     @IBOutlet var bpmLabel: WKInterfaceLabel!
+    @IBOutlet var buttonGroup: WKInterfaceGroup!
+    @IBOutlet weak var labelGroup: WKInterfaceGroup!
+    
+    //FLOW CONTROL
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+    var appState = possibleAppStates.welcome
     
     //NETWORKING
     //Server url
@@ -38,24 +51,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
         super.awake(withContext: context)
-        //Start recollecting motion data
-        let queue = OperationQueue()
-        queue.name = "motionqueue"
-        queue.maxConcurrentOperationCount = 1
-        motion.deviceMotionUpdateInterval = 0.2
-        motion.startDeviceMotionUpdates(to: queue) { (data: CMDeviceMotion?, error: Error?) in
-            if error != nil {
-                            print("Encountered error: \(error!)")
-                        }
-            
-            if data != nil {
-                print("x: \(data!.userAcceleration.x)) y: \(data!.userAcceleration.y) z: \(data!.userAcceleration.z)")
-            }else{
-                print("[Accelerometer]: No Data")
-            }
-        }
         
-        
+        startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
             if let data = self.motion.deviceMotion{
@@ -64,10 +61,17 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 print("[Motion]: No motion data available")
             }
         }
+        
+        //Schedule activation of workout
+        
+        
     }
     
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
+        
+        labelGroup.setRelativeHeight(0,withAdjustment: 0)
+        buttonGroup.setRelativeHeight(1,withAdjustment: 0)
         
         let typesToShare: Set = [
             HKQuantityType.workoutType()
@@ -100,6 +104,19 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     
     override func didDeactivate() {
         // This method is called when watch view controller is no longer visible
+    }
+    
+    func startMotionCollection(){
+        //Start recollecting motion data
+        let queue = OperationQueue()
+        queue.name = "motionqueue"
+        queue.maxConcurrentOperationCount = 1
+        motion.deviceMotionUpdateInterval = 0.2
+        motion.startDeviceMotionUpdates(to: queue) { (data: CMDeviceMotion?, error: Error?) in
+            if error != nil {
+                            print("Encountered error: \(error!)")
+            }
+        }
     }
     
     func workoutSession(_ workoutSession: HKWorkoutSession,
@@ -364,16 +381,37 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         
     @IBAction func buttonPressed() {
         
-        switch state{
-        case HKWorkoutSessionState.running:
+        switch appState {
+        case .welcome:
+            labelGroup.setRelativeHeight(0.5,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(0.5,withAdjustment: 0)
+            startWorkout()
+            appState = possibleAppStates.activeWorkout
+            startStopButton!.setTitle("Stop")
+        case .activeWorkout:
             stopWorkout()
-            state = HKWorkoutSessionState.ended
+            appState = possibleAppStates.activeNotWorkout
             bpmLabel!.setText("---")
             startStopButton!.setTitle("Start")
-        default:
-            startWorkout()
-            state = HKWorkoutSessionState.running
-            startStopButton!.setTitle("Stop")
+        case .activeNotWorkout:
+            break
+        case .emergency:
+            break
+        case .stopped:
+            break
         }
+        
+//        switch state{
+//        case HKWorkoutSessionState.running:
+//            stopWorkout()
+//            state = HKWorkoutSessionState.ended
+//            bpmLabel!.setText("---")
+//            startStopButton!.setTitle("Start")
+//        default:
+//            startWorkout()
+//            state = HKWorkoutSessionState.running
+//            startStopButton!.setTitle("Stop")
+//        }
     }
 }
+    
