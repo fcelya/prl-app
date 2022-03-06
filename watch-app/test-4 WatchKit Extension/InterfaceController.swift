@@ -334,14 +334,6 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         // Initialize our workout
         initWorkout()
         
-        //Get ECG
-        ECG = requestECG()
-        if(ECG == nil){
-            print("[ECG]: No ECG data available")
-        }else{
-            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
-        }
-        
         // Start the workout session and begin data collection
         session.startActivity(with: Date())
         builder.beginCollection(withStart: Date()) { (succ, error) in
@@ -365,6 +357,22 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 }
             }
         }
+    
+    func getSendECG(){
+        //Get ECG
+        ECG = requestECG()
+        if(ECG == nil){
+            print("[ECG]: No ECG data available")
+        }else{
+            ecgDict["data"]!["ecg"]!.append(ECG!)
+            ecgDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
+            //Send ECG
+            DispatchQueue.main.async() {
+                self.postHTTP(info: self.ecgDict as Dictionary<String,[String:[Any]]>, url: self.serverUrl)
+            }
+        }
+    }
     
     func postHTTP(info: Dictionary<String, Any>, url: URL) {
         
@@ -441,6 +449,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             labelGroup.setRelativeHeight(0.5,withAdjustment: 0)
             buttonGroup.setRelativeHeight(0.5,withAdjustment: 0)
             startWorkout()
+            getSendECG()
             appState = possibleAppStates.activeWorkout
             startStopButton!.setTitle("Stop")
         case .activeWorkout:
