@@ -28,6 +28,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         case stopped
     }
     var appState = possibleAppStates.welcome
+    var appStateChangeTime: Int64 = 0
+    let maxWorkoutTime = 30
+    let timeBetweenWorkouts = 60
     
     //NETWORKING
     //Server url
@@ -35,6 +38,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     
     //MOVEMENT
     let motion = CMMotionManager()
+    let motionRefreshRate = 1
     
     //HEALTH INFO
     // Our workout session
@@ -84,16 +88,11 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         // Configure interface objects here.
         super.awake(withContext: context)
         
-        let healthDataCollected = true
-        let maxWorkoutTime = 30
-        let timeBetweenWorkouts = 60
-        
-        //Schedule workouts with timeIntervalSince1970
-        //___________________________________________________
+        var healthDataCollected = false
         
         startMotionCollection()
         //Check for motion data
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
+        Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
             if let data = self.motion.deviceMotion{
                 print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
                 self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
@@ -109,12 +108,28 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             }else{
                 print("[Motion]: No motion data available")
             }
+            //Check If workout should be stopped or activated
+            switch appState{
+            case .activeWorkout:
+                if Int64(NSDate().timeIntervalSince1970) - appStateChangeTime > maxWorkoutTime{
+                    DispatchQueue.main.async() {
+                        postHTTP(info: workoutDict, url: serverUrl)
+                        // TODO: Empty the workout dictionary
+                    }
+                    stopWorkout()
+                }
+            case .activeNotWorkout:
+                if Int64(NSDate().timeIntervalSince1970) - appStateChangeTime > timeBetweenWorkouts{
+                    DispatchQueue.main.async() {
+                        postHTTP(info: workoutDict, url: serverUrl)
+                        // TODO: Empty the workout dictionary
+                    }
+                    startWorkout()
+                }
+            }
         }
-        
-        //Schedule activation of workout
-        
-        
     }
+    
     
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
@@ -340,6 +355,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     func startWorkout() {
         // Initialize our workout
         initWorkout()
+        print("[Workout Started]")
         
         // Start the workout session and begin data collection
         session.startActivity(with: Date())
@@ -348,6 +364,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 fatalError("Error beginning collection from builder: \(String(describing: error)))")
             }
         }
+        state = HKWorkoutSessionState.running
+        appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
         
     }
     
@@ -363,6 +381,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                     }
                 }
             }
+        print("[Workout Stopped]")
+        state = HKWorkoutSessionState.stopped
+        appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
         }
     
     func getSendECG(){
