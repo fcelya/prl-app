@@ -93,7 +93,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
-            if appState = .activeWorkout{
+            if self.appState == possibleAppStates.activeWorkout{
                 if let data = self.motion.deviceMotion{
                     print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
                     self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
@@ -491,7 +491,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             bpmLabel!.setText("---")
             startStopButton!.setTitle("Start")
         case .activeNotWorkout:
-            break
+            startWorkout()
+            appState = possibleAppStates.activeWorkout
+            startStopButton!.setTitle("Stop")
         case .emergency:
             break
         case .stopped:
