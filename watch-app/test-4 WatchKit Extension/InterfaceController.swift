@@ -109,23 +109,25 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 print("[Motion]: No motion data available")
             }
             //Check If workout should be stopped or activated
-            switch appState{
+            switch self.appState{
             case .activeWorkout:
-                if Int64(NSDate().timeIntervalSince1970) - appStateChangeTime > maxWorkoutTime{
+                if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.maxWorkoutTime{
                     DispatchQueue.main.async() {
-                        postHTTP(info: workoutDict, url: serverUrl)
+                        self.postHTTP(info: self.workoutDict, url: self.serverUrl)
                         // TODO: Empty the workout dictionary
                     }
-                    stopWorkout()
+                    self.stopWorkout()
                 }
             case .activeNotWorkout:
-                if Int64(NSDate().timeIntervalSince1970) - appStateChangeTime > timeBetweenWorkouts{
+                if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.timeBetweenWorkouts{
                     DispatchQueue.main.async() {
-                        postHTTP(info: workoutDict, url: serverUrl)
+                        self.postHTTP(info: self.workoutDict, url: self.serverUrl)
                         // TODO: Empty the workout dictionary
                     }
-                    startWorkout()
+                    self.startWorkout()
                 }
+            default:
+                break
             }
         }
     }
