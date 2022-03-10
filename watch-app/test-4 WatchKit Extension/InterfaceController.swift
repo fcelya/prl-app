@@ -89,25 +89,28 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         super.awake(withContext: context)
         
         var healthDataCollected = false
-        
+        // TODO: Add condition that workout stops when all data has been collected
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
-            if let data = self.motion.deviceMotion{
-                print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
-                self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
-                self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
-                self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
-                self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
-                self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
-                self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
-                self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
-                self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
-                self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
-                self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
-            }else{
-                print("[Motion]: No motion data available")
+            if appState = .activeWorkout{
+                if let data = self.motion.deviceMotion{
+                    print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
+                    self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
+                    self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
+                    self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
+                    self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
+                    self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
+                    self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
+                    self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
+                    self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
+                    self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
+                    self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+                }else{
+                    print("[Motion]: No motion data available")
+                }
             }
+            
             //Check If workout should be stopped or activated
             switch self.appState{
             case .activeWorkout:
