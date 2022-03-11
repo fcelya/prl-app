@@ -34,7 +34,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     
     //NETWORKING
     //Server url
-    let serverUrl: URL = URL(string: "https://ptsv2.com/t/uf53u-1645038057/post")!
+    let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
     
     //MOVEMENT
     let motion = CMMotionManager()
@@ -116,17 +116,13 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             case .activeWorkout:
                 if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.maxWorkoutTime{
                     DispatchQueue.main.async() {
-                        self.postHTTP(info: self.workoutDict, url: self.serverUrl)
+                        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
                         // TODO: Empty the workout dictionary
                     }
                     self.stopWorkout()
                 }
             case .activeNotWorkout:
                 if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.timeBetweenWorkouts{
-                    DispatchQueue.main.async() {
-                        self.postHTTP(info: self.workoutDict, url: self.serverUrl)
-                        // TODO: Empty the workout dictionary
-                    }
                     self.startWorkout()
                 }
             default:
@@ -441,6 +437,52 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         }
     }
     
+    func postHTTP2(info: Dictionary<String, Any>, url: URL) {
+        
+            //create the session object
+            let session = URLSession.shared
+
+            //now create the URLRequest object using the url object
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST" //set http method as POST
+
+            do {
+                request.httpBody = try JSONSerialization.data(withJSONObject: info, options: .prettyPrinted) // pass dictionary to nsdata object and set it as request body
+
+            } catch let error {
+                print(error.localizedDescription)
+            }
+
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.addValue("application/json", forHTTPHeaderField: "Accept")
+
+            //create dataTask using the session object to send data to the server
+            let task = session.dataTask(with: request, completionHandler: { data, response, error in
+
+                guard error == nil else {
+                    print("[HTTP POST]: Encountered error: \(error!)")
+                    return
+                }
+
+                guard let data = data else {
+                    return
+                }
+
+                do {
+                    //create json object from data
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] {
+                        print(json)
+                        // handle json...
+                    }
+
+                } catch let error {
+                    print(error.localizedDescription)
+                }
+            })
+            task.resume()
+        }
+    
+    
     func requestECG() -> HKElectrocardiogram? {
         // Create the electrocardiogram sample type.
         let ecgType = HKObjectType.electrocardiogramType()
@@ -499,18 +541,6 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         case .stopped:
             break
         }
-        
-//        switch state{
-//        case HKWorkoutSessionState.running:
-//            stopWorkout()
-//            state = HKWorkoutSessionState.ended
-//            bpmLabel!.setText("---")
-//            startStopButton!.setTitle("Start")
-//        default:
-//            startWorkout()
-//            state = HKWorkoutSessionState.running
-//            startStopButton!.setTitle("Stop")
-//        }
     }
 }
     
