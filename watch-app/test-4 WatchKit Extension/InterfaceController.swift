@@ -115,9 +115,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             switch self.appState{
             case .activeWorkout:
                 if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.maxWorkoutTime{
+                    self.bpmLabel!.setText("---")
                     DispatchQueue.main.async() {
-                        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
-                        // TODO: Empty the workout dictionary
+                        self.sendAndClean()
                     }
                     self.stopWorkout()
                 }
@@ -315,12 +315,6 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             print("[workoutBuilder] Blood Pressure Systolic: \(String(describing: BPSstringValue))")
             print("[workoutBuilder] Blood Pressure Dyastolic: \(String(describing: BPDstringValue))")
             print("[workoutBuilder] Respiratory Rate: \(String(describing: RRstringValue))")
-            //send data to server here
-            let info: Dictionary = [
-                "HeartRate": Int(HRstringValue)!,
-                "Energy Burned": Int(AEBstringValue)!,
-                "Distance Walked": Int(DWstringValue)!]
-            postHTTP(info: info as Dictionary<String, Any> ,url: serverUrl)
         }
     }
         
@@ -398,44 +392,44 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
             //Send ECG
             DispatchQueue.main.async() {
-                self.postHTTP(info: self.ecgDict as Dictionary<String,[String:[Any]]>, url: self.serverUrl)
+                self.postHTTP2(info: self.ecgDict as Dictionary<String,[String:[Any]]>, url: self.serverUrl)
             }
         }
     }
     
-    func postHTTP(info: Dictionary<String, Any>, url: URL) {
-        
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: info, options: JSONSerialization.WritingOptions.prettyPrinted)
-            
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = jsonData
-            
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                    if let error = error {
-                        print("error=\(String(describing: error))")
-                        return
-                    }
-                    guard let httpResponse = response as? HTTPURLResponse,
-                        (200...299).contains(httpResponse.statusCode) else {
-                        print("error=\(String(describing: error))")
-                        return
-                    }
-                    if let mimeType = httpResponse.mimeType, mimeType == "text/plain",
-                        let data = data,
-                        let message = String(data: data, encoding: .utf8) {
-                        DispatchQueue.main.async {
-                            print(message)
-                        }
-                    }
-                }
-            task.resume()
-        } catch {
-            print(error.localizedDescription)
-        }
-    }
+//    func postHTTP(info: Dictionary<String, Any>, url: URL) {
+//
+//        do {
+//            let jsonData = try JSONSerialization.data(withJSONObject: info, options: JSONSerialization.WritingOptions.prettyPrinted)
+//
+//            var request = URLRequest(url: url)
+//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//            request.httpMethod = "POST"
+//            request.httpBody = jsonData
+//
+//            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//                    if let error = error {
+//                        print("error=\(String(describing: error))")
+//                        return
+//                    }
+//                    guard let httpResponse = response as? HTTPURLResponse,
+//                        (200...299).contains(httpResponse.statusCode) else {
+//                        print("error=\(String(describing: error))")
+//                        return
+//                    }
+//                    if let mimeType = httpResponse.mimeType, mimeType == "text/plain",
+//                        let data = data,
+//                        let message = String(data: data, encoding: .utf8) {
+//                        DispatchQueue.main.async {
+//                            print(message)
+//                        }
+//                    }
+//                }
+//            task.resume()
+//        } catch {
+//            print(error.localizedDescription)
+//        }
+//    }
     
     func postHTTP2(info: Dictionary<String, Any>, url: URL) {
         
@@ -516,6 +510,36 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         return latestECG
     }
     
+    func sendAndClean(){
+        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
+        self.postHTTP2(info: self.motionDict, url: self.serverUrl)
+        self.motionDict = ["type": ["type":["motion"]],
+                             "data": ["accx":[],
+                                      "accy":[],
+                                      "accz":[],
+                                      "gyrx":[],
+                                      "gyry":[],
+                                      "gyrz":[],
+                                      "grvx":[],
+                                      "grvy":[],
+                                      "grvz":[],
+                                      "timestamp":[]]]
+        self.workoutDict = ["type": ["type": ["workout"]],
+                            "data": ["Heart Rate": [],
+                                     "Active Energy Burned": [],
+                                     "Basal Energy Burned": [],
+                                     "Apple Stand Time": [],
+                                     "Apple Walking Steadiness": [],
+                                     "Environmental Audio Exposure": [],
+                                     "Heart Rate Variability": [],
+                                     "Oxygen Saturation": [],
+                                     "Body Temperature": [],
+                                     "Blood Pressure Systolic": [],
+                                     "Blood Pressure Dyastolic": [],
+                                     "Respiratory Rate": [],
+                                     "Distance Walked": []]]
+    }
+    
         
     @IBAction func buttonPressed() {
         
@@ -526,16 +550,22 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             startWorkout()
             getSendECG()
             appState = possibleAppStates.activeWorkout
-            startStopButton!.setTitle("Stop")
+            startStopButton!.setTitle("Exit")
         case .activeWorkout:
             stopWorkout()
-            appState = possibleAppStates.activeNotWorkout
+            appState = possibleAppStates.welcome
             bpmLabel!.setText("---")
-            startStopButton!.setTitle("Start")
+            startStopButton!.setTitle("Welcome!")
+            labelGroup.setRelativeHeight(0,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+            DispatchQueue.main.async() {
+                self.sendAndClean()
+            }
         case .activeNotWorkout:
-            startWorkout()
-            appState = possibleAppStates.activeWorkout
-            startStopButton!.setTitle("Stop")
+            appState = possibleAppStates.welcome
+            startStopButton!.setTitle("Welcome!")
+            labelGroup.setRelativeHeight(0,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(1,withAdjustment: 0)
         case .emergency:
             break
         case .stopped:
