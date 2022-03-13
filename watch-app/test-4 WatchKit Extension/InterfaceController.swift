@@ -117,7 +117,33 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.maxWorkoutTime{
                     self.bpmLabel!.setText("---")
                     DispatchQueue.main.async() {
-                        self.sendAndClean()
+                        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
+                        self.postHTTP2(info: self.motionDict, url: self.serverUrl)
+                        self.motionDict = ["type": ["type":["motion"]],
+                                             "data": ["accx":[],
+                                                      "accy":[],
+                                                      "accz":[],
+                                                      "gyrx":[],
+                                                      "gyry":[],
+                                                      "gyrz":[],
+                                                      "grvx":[],
+                                                      "grvy":[],
+                                                      "grvz":[],
+                                                      "timestamp":[]]]
+                        self.workoutDict = ["type": ["type": ["workout"]],
+                                            "data": ["Heart Rate": [],
+                                                     "Active Energy Burned": [],
+                                                     "Basal Energy Burned": [],
+                                                     "Apple Stand Time": [],
+                                                     "Apple Walking Steadiness": [],
+                                                     "Environmental Audio Exposure": [],
+                                                     "Heart Rate Variability": [],
+                                                     "Oxygen Saturation": [],
+                                                     "Body Temperature": [],
+                                                     "Blood Pressure Systolic": [],
+                                                     "Blood Pressure Dyastolic": [],
+                                                     "Respiratory Rate": [],
+                                                     "Distance Walked": []]]
                     }
                     self.stopWorkout()
                 }
@@ -510,35 +536,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         return latestECG
     }
     
-    func sendAndClean(){
-        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
-        self.postHTTP2(info: self.motionDict, url: self.serverUrl)
-        self.motionDict = ["type": ["type":["motion"]],
-                             "data": ["accx":[],
-                                      "accy":[],
-                                      "accz":[],
-                                      "gyrx":[],
-                                      "gyry":[],
-                                      "gyrz":[],
-                                      "grvx":[],
-                                      "grvy":[],
-                                      "grvz":[],
-                                      "timestamp":[]]]
-        self.workoutDict = ["type": ["type": ["workout"]],
-                            "data": ["Heart Rate": [],
-                                     "Active Energy Burned": [],
-                                     "Basal Energy Burned": [],
-                                     "Apple Stand Time": [],
-                                     "Apple Walking Steadiness": [],
-                                     "Environmental Audio Exposure": [],
-                                     "Heart Rate Variability": [],
-                                     "Oxygen Saturation": [],
-                                     "Body Temperature": [],
-                                     "Blood Pressure Systolic": [],
-                                     "Blood Pressure Dyastolic": [],
-                                     "Respiratory Rate": [],
-                                     "Distance Walked": []]]
-    }
+//    func sendAndClean(){
+//
+//    }
     
         
     @IBAction func buttonPressed() {
@@ -558,9 +558,6 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             startStopButton!.setTitle("Welcome!")
             labelGroup.setRelativeHeight(0,withAdjustment: 0)
             buttonGroup.setRelativeHeight(1,withAdjustment: 0)
-            DispatchQueue.main.async() {
-                self.sendAndClean()
-            }
         case .activeNotWorkout:
             appState = possibleAppStates.welcome
             startStopButton!.setTitle("Welcome!")
