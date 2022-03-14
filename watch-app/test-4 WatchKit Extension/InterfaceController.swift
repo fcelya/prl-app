@@ -9,19 +9,36 @@ import WatchKit
 import Foundation
 import HealthKit
 import CoreMotion
+import UIKit
 
 
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
     
     @IBOutlet var startStopButton: WKInterfaceButton!
     @IBOutlet var bpmLabel: WKInterfaceLabel!
+    @IBOutlet var buttonGroup: WKInterfaceGroup!
+    @IBOutlet weak var labelGroup: WKInterfaceGroup!
+    
+    //FLOW CONTROL
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+    var appState = possibleAppStates.welcome
+    var appStateChangeTime: Int64 = 0
+    let maxWorkoutTime = 30
+    let timeBetweenWorkouts = 60
     
     //NETWORKING
     //Server url
-    let serverUrl: URL = URL(string: "https://ptsv2.com/t/uf53u-1645038057/post")!
+    let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
     
     //MOVEMENT
     let motion = CMMotionManager()
+    let motionRefreshRate = 1
     
     //HEALTH INFO
     // Our workout session
@@ -34,40 +51,92 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     let healthStore = HKHealthStore()
     //ecg
     var ECG: HKElectrocardiogram?
+    
+    //CREATE DATA STRUCTURES
+    var ecgDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["ecg"]],
+                                                        "data": ["ecg": [],
+                                                                 "timestamp": []]]
+
+    var motionDict: Dictionary<String, [String: [Any]]> = ["type": ["type":["motion"]],
+                                                          "data": ["accx":[],
+                                                                   "accy":[],
+                                                                   "accz":[],
+                                                                   "gyrx":[],
+                                                                   "gyry":[],
+                                                                   "gyrz":[],
+                                                                   "grvx":[],
+                                                                   "grvy":[],
+                                                                   "grvz":[],
+                                                                   "timestamp":[]]]
+
+    var workoutDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["workout"]],
+                                                              "data": ["Heart Rate": [],
+                                                                       "Active Energy Burned": [],
+                                                                       "Basal Energy Burned": [],
+                                                                       "Apple Stand Time": [],
+                                                                       "Apple Walking Steadiness": [],
+                                                                       "Environmental Audio Exposure": [],
+                                                                       "Heart Rate Variability": [],
+                                                                       "Oxygen Saturation": [],
+                                                                       "Body Temperature": [],
+                                                                       "Blood Pressure Systolic": [],
+                                                                       "Blood Pressure Dyastolic": [],
+                                                                       "Respiratory Rate": [],
+                                                                       "Distance Walked": []]]
 
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
         super.awake(withContext: context)
-        //Start recollecting motion data
-        let queue = OperationQueue()
-        queue.name = "motionqueue"
-        queue.maxConcurrentOperationCount = 1
-        motion.deviceMotionUpdateInterval = 0.2
-        motion.startDeviceMotionUpdates(to: queue) { (data: CMDeviceMotion?, error: Error?) in
-            if error != nil {
-                            print("Encountered error: \(error!)")
-                        }
-            
-            if data != nil {
-                print("x: \(data!.userAcceleration.x)) y: \(data!.userAcceleration.y) z: \(data!.userAcceleration.z)")
-            }else{
-                print("[Accelerometer]: No Data")
-            }
-        }
         
-        
+        var healthDataCollected = false
+        // TODO: Add condition that workout stops when all data has been collected
+        startMotionCollection()
         //Check for motion data
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
-            if let data = self.motion.deviceMotion{
-                print("x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
-            }else{
-                print("[Motion]: No motion data available")
+        Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
+            if self.appState == possibleAppStates.activeWorkout{
+                if let data = self.motion.deviceMotion{
+                    print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
+                    self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
+                    self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
+                    self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
+                    self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
+                    self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
+                    self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
+                    self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
+                    self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
+                    self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
+                    self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+                }else{
+                    print("[Motion]: No motion data available")
+                }
+            }
+            
+            //Check If workout should be stopped or activated
+            switch self.appState{
+            case .activeWorkout:
+                if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.maxWorkoutTime{
+                    self.bpmLabel!.setText("---")
+                    DispatchQueue.main.async() {
+                        self.sendAndSave()
+                    }
+                    self.stopWorkout()
+                }
+            case .activeNotWorkout:
+                if Int64(NSDate().timeIntervalSince1970) - self.appStateChangeTime > self.timeBetweenWorkouts{
+                    self.startWorkout()
+                }
+            default:
+                break
             }
         }
     }
     
+    
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
+        
+        labelGroup.setRelativeHeight(0,withAdjustment: 0)
+        buttonGroup.setRelativeHeight(1,withAdjustment: 0)
         
         let typesToShare: Set = [
             HKQuantityType.workoutType()
@@ -100,6 +169,19 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     
     override func didDeactivate() {
         // This method is called when watch view controller is no longer visible
+    }
+    
+    func startMotionCollection(){
+        //Start recollecting motion data
+        let queue = OperationQueue()
+        queue.name = "motionqueue"
+        queue.maxConcurrentOperationCount = 1
+        motion.deviceMotionUpdateInterval = 0.2
+        motion.startDeviceMotionUpdates(to: queue) { (data: CMDeviceMotion?, error: Error?) in
+            if error != nil {
+                            print("Encountered error: \(error!)")
+            }
+        }
     }
     
     func workoutSession(_ workoutSession: HKWorkoutSession,
@@ -151,54 +233,67 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
                     HRstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Heart Rate"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
                     AEBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Active Energy Burned"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: distanceUnit)
                     DWstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Basal Energy Burned"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: energyUnit)
                     BEBstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Distance Walked"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .appleStandTime):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
                     ASTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Apple Stand Time"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .appleWalkingSteadiness):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
                     AWSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Apple Walking Steadiness"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .environmentalAudioExposure):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: soundUnit)
                     EAEstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Environmental Audio Exposure"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: timeUnit)
                     HRVstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Heart Rate Variability"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .oxygenSaturation):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: percentUnit)
                     OSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Oxygen Saturation"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bodyTemperature):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: temperatureUnit)
                     BTstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Body Temperature"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
                     BPSstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Blood Pressure Systolic"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: pressureUnit)
                     BPDstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Blood Pressure Dyastolic"]!.append(Double(round(1 * value!) / 1))
                 case HKQuantityType.quantityType(forIdentifier: .respiratoryRate):
                     let statistics = workoutBuilder.statistics(for: quantityType)
                     let value = statistics!.mostRecentQuantity()?.doubleValue(for: rateUnit)
                     RRstringValue = String(Int(Double(round(1 * value!) / 1)))
+                    workoutDict["data"]!["Respiratory Rate"]!.append(Double(round(1 * value!) / 1))
                 default:
                     return
             }
@@ -220,12 +315,6 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             print("[workoutBuilder] Blood Pressure Systolic: \(String(describing: BPSstringValue))")
             print("[workoutBuilder] Blood Pressure Dyastolic: \(String(describing: BPDstringValue))")
             print("[workoutBuilder] Respiratory Rate: \(String(describing: RRstringValue))")
-            //send data to server here
-            let info: Dictionary = [
-                "HeartRate": Int(HRstringValue)!,
-                "Energy Burned": Int(AEBstringValue)!,
-                "Distance Walked": Int(DWstringValue)!]
-            postHTTP(info: info as Dictionary<String, Any> ,url: serverUrl)
         }
     }
         
@@ -261,14 +350,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     func startWorkout() {
         // Initialize our workout
         initWorkout()
-        
-        //Get ECG
-        ECG = requestECG()
-        if(ECG == nil){
-            print("[ECG]: No ECG data available")
-        }else{
-            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
-        }
+        print("[Workout Started]")
         
         // Start the workout session and begin data collection
         session.startActivity(with: Date())
@@ -277,12 +359,16 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 fatalError("Error beginning collection from builder: \(String(describing: error)))")
             }
         }
+        state = HKWorkoutSessionState.running
+        appState = possibleAppStates.activeWorkout
+        appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
         
     }
     
     
     func stopWorkout() {
             // Stop the workout session
+        if session != nil{
             session.end()
             builder.endCollection(withEnd: Date()) { (success, error) in
                 self.builder.finishWorkout { (workout, error) in
@@ -292,41 +378,109 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                     }
                 }
             }
+            print("[Workout Stopped]")
+            state = HKWorkoutSessionState.stopped
+            appState = possibleAppStates.activeNotWorkout
+            appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
+            }
         }
+            
     
-    func postHTTP(info: Dictionary<String, Any>, url: URL) {
-        
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: info, options: JSONSerialization.WritingOptions.prettyPrinted)
-            
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = jsonData
-            
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                    if let error = error {
-                        print("error=\(String(describing: error))")
-                        return
-                    }
-                    guard let httpResponse = response as? HTTPURLResponse,
-                        (200...299).contains(httpResponse.statusCode) else {
-                        print("error=\(String(describing: error))")
-                        return
-                    }
-                    if let mimeType = httpResponse.mimeType, mimeType == "text/plain",
-                        let data = data,
-                        let message = String(data: data, encoding: .utf8) {
-                        DispatchQueue.main.async {
-                            print(message)
-                        }
-                    }
-                }
-            task.resume()
-        } catch {
-            print(error.localizedDescription)
+    func getSendECG(){
+        //Get ECG
+        ECG = requestECG()
+        if(ECG == nil){
+            print("[ECG]: No ECG data available")
+        }else{
+            ecgDict["data"]!["ecg"]!.append(ECG!)
+            ecgDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
+            //Send ECG
+            DispatchQueue.main.async() {
+                self.postHTTP2(info: self.ecgDict as Dictionary<String,[String:[Any]]>, url: self.serverUrl)
+            }
         }
     }
+    
+//    func postHTTP(info: Dictionary<String, Any>, url: URL) {
+//
+//        do {
+//            let jsonData = try JSONSerialization.data(withJSONObject: info, options: JSONSerialization.WritingOptions.prettyPrinted)
+//
+//            var request = URLRequest(url: url)
+//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//            request.httpMethod = "POST"
+//            request.httpBody = jsonData
+//
+//            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//                    if let error = error {
+//                        print("error=\(String(describing: error))")
+//                        return
+//                    }
+//                    guard let httpResponse = response as? HTTPURLResponse,
+//                        (200...299).contains(httpResponse.statusCode) else {
+//                        print("error=\(String(describing: error))")
+//                        return
+//                    }
+//                    if let mimeType = httpResponse.mimeType, mimeType == "text/plain",
+//                        let data = data,
+//                        let message = String(data: data, encoding: .utf8) {
+//                        DispatchQueue.main.async {
+//                            print(message)
+//                        }
+//                    }
+//                }
+//            task.resume()
+//        } catch {
+//            print(error.localizedDescription)
+//        }
+//    }
+    
+    func postHTTP2(info: Dictionary<String, Any>, url: URL) {
+        
+            //create the session object
+            let session = URLSession.shared
+
+            //now create the URLRequest object using the url object
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST" //set http method as POST
+
+            do {
+                request.httpBody = try JSONSerialization.data(withJSONObject: info, options: .prettyPrinted) // pass dictionary to nsdata object and set it as request body
+
+            } catch let error {
+                print(error.localizedDescription)
+            }
+
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.addValue("application/json", forHTTPHeaderField: "Accept")
+
+            //create dataTask using the session object to send data to the server
+            let task = session.dataTask(with: request, completionHandler: { data, response, error in
+
+                guard error == nil else {
+                    print("[HTTP POST]: Encountered error: \(error!)")
+                    return
+                }
+
+                guard let data = data else {
+                    return
+                }
+
+                do {
+                    //create json object from data
+                    if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] {
+                        print(json)
+                        // handle json...
+                    }
+
+                } catch let error {
+                    print(error.localizedDescription)
+                }
+            })
+            task.resume()
+        }
+    
     
     func requestECG() -> HKElectrocardiogram? {
         // Create the electrocardiogram sample type.
@@ -361,19 +515,72 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         return latestECG
     }
     
+//    func sendAndClean(){
+//
+//    }
+    
+    func sendAndSave(){
+        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
+        self.postHTTP2(info: self.motionDict, url: self.serverUrl)
+        self.motionDict = ["type": ["type":["motion"]],
+                             "data": ["accx":[],
+                                      "accy":[],
+                                      "accz":[],
+                                      "gyrx":[],
+                                      "gyry":[],
+                                      "gyrz":[],
+                                      "grvx":[],
+                                      "grvy":[],
+                                      "grvz":[],
+                                      "timestamp":[]]]
+        self.workoutDict = ["type": ["type": ["workout"]],
+                            "data": ["Heart Rate": [],
+                                     "Active Energy Burned": [],
+                                     "Basal Energy Burned": [],
+                                     "Apple Stand Time": [],
+                                     "Apple Walking Steadiness": [],
+                                     "Environmental Audio Exposure": [],
+                                     "Heart Rate Variability": [],
+                                     "Oxygen Saturation": [],
+                                     "Body Temperature": [],
+                                     "Blood Pressure Systolic": [],
+                                     "Blood Pressure Dyastolic": [],
+                                     "Respiratory Rate": [],
+                                     "Distance Walked": []]]
+        return
+    }
+    
         
     @IBAction func buttonPressed() {
         
-        switch state{
-        case HKWorkoutSessionState.running:
-            stopWorkout()
-            state = HKWorkoutSessionState.ended
-            bpmLabel!.setText("---")
-            startStopButton!.setTitle("Start")
-        default:
+        switch appState {
+        case .welcome:
+            labelGroup.setRelativeHeight(0.5,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(0.5,withAdjustment: 0)
             startWorkout()
-            state = HKWorkoutSessionState.running
-            startStopButton!.setTitle("Stop")
+            getSendECG()
+            appState = possibleAppStates.activeWorkout
+            startStopButton!.setTitle("Exit")
+        case .activeWorkout:
+            stopWorkout()
+            appState = possibleAppStates.welcome
+            DispatchQueue.main.async() {
+                self.sendAndSave()
+            }
+            bpmLabel!.setText("---")
+            startStopButton!.setTitle("Welcome!")
+            labelGroup.setRelativeHeight(0,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+        case .activeNotWorkout:
+            appState = possibleAppStates.welcome
+            startStopButton!.setTitle("Welcome!")
+            labelGroup.setRelativeHeight(0,withAdjustment: 0)
+            buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+        case .emergency:
+            break
+        case .stopped:
+            break
         }
     }
 }
+    

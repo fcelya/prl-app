@@ -19,7 +19,7 @@
                         </group>
                         <group width="1" height="0.5" alignment="left" id="VBE-pI-xOq">
                             <items>
-                                <button width="1" height="1" alignment="left" title="Button" id="ldB-XR-Z3L">
+                                <button width="1" height="1" alignment="left" title="Welcome!" id="ldB-XR-Z3L">
                                     <connections>
                                         <action selector="buttonPressed" destination="AgC-eL-Hgc" id="qKG-d3-WUI"/>
                                     </connections>
@@ -29,6 +29,8 @@
                     </items>
                     <connections>
                         <outlet property="bpmLabel" destination="vik-iC-UEu" id="2Gl-sq-j47"/>
+                        <outlet property="buttonGroup" destination="VBE-pI-xOq" id="54c-4z-ZlD"/>
+                        <outlet property="labelGroup" destination="lME-PD-GI7" id="Von-Yf-YS0"/>
                         <outlet property="startStopButton" destination="ldB-XR-Z3L" id="fJt-Qa-b9p"/>
                     </connections>
                 </controller>
