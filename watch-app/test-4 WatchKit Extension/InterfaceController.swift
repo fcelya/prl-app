@@ -386,6 +386,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             }
         }
         state = HKWorkoutSessionState.running
+        appState = possibleAppStates.activeWorkout
         appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
         
     }
@@ -393,6 +394,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     
     func stopWorkout() {
             // Stop the workout session
+        if session != nil{
             session.end()
             builder.endCollection(withEnd: Date()) { (success, error) in
                 self.builder.finishWorkout { (workout, error) in
@@ -402,10 +404,13 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                     }
                 }
             }
-        print("[Workout Stopped]")
-        state = HKWorkoutSessionState.stopped
-        appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
+            print("[Workout Stopped]")
+            state = HKWorkoutSessionState.stopped
+            appState = possibleAppStates.activeNotWorkout
+            appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
+            }
         }
+            
     
     func getSendECG(){
         //Get ECG
