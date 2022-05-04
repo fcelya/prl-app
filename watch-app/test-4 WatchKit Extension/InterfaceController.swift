@@ -14,6 +14,8 @@ import UIKit
 
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
     
+    let deviceID = "test_watch"
+    
     @IBOutlet var startStopButton: WKInterfaceButton!
     @IBOutlet var bpmLabel: WKInterfaceLabel!
     @IBOutlet var buttonGroup: WKInterfaceGroup!
@@ -29,12 +31,15 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     }
     var appState = possibleAppStates.welcome
     var appStateChangeTime: Int64 = 0
-    let maxWorkoutTime = 30
-    let timeBetweenWorkouts = 60
+    let maxWorkoutTime = 15
+    let timeBetweenWorkouts = 30
     
     //NETWORKING
     //Server url
-    let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
+    //let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
+    //let serverUrl: URL = URL(string: "https://ptsv2.com/t/0l8up-1651632300/post")!
+    let serverUrl: URL = URL(string: "http://3.236.158.98/post")!
+    
     
     //MOVEMENT
     let motion = CMMotionManager()
@@ -53,11 +58,11 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     var ECG: HKElectrocardiogram?
     
     //CREATE DATA STRUCTURES
-    var ecgDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["ecg"]],
+    var ecgDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["ecg"], "device id":[]],
                                                         "data": ["ecg": [],
                                                                  "timestamp": []]]
 
-    var motionDict: Dictionary<String, [String: [Any]]> = ["type": ["type":["motion"]],
+    var motionDict: Dictionary<String, [String: [Any]]> = ["type": ["type":["motion"], "device id":[]],
                                                           "data": ["accx":[],
                                                                    "accy":[],
                                                                    "accz":[],
@@ -69,7 +74,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                                                                    "grvz":[],
                                                                    "timestamp":[]]]
 
-    var workoutDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["workout"]],
+    var workoutDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["health"], "device id":[]],
                                                               "data": ["Heart Rate": [],
                                                                        "Active Energy Burned": [],
                                                                        "Basal Energy Burned": [],
@@ -82,8 +87,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                                                                        "Blood Pressure Systolic": [],
                                                                        "Blood Pressure Dyastolic": [],
                                                                        "Respiratory Rate": [],
-                                                                       "Distance Walked": []]]
-
+                                                                       "Distance Walked": []
+                                                                      ]]
+    
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
         super.awake(withContext: context)
@@ -160,11 +166,16 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         ]
         //have to add correlationtype.bloodpressure, categorytype.irregularheartrythm,
         //categorytype.highheartrateevent, categorytype.lowheartrateevent, electrocardiogramtype
+        //Apparently bloodpressure is propietary to Apple and not allowed to be read. (NSException*) "Authorization
+        // to read the following types is disallowed: HKCorrelationTypeIdentifierBloodPressure
         
         healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { (success, error) in if !success {
                 fatalError("Error requesting authorization from health store: \(String(describing: error)))")
             }
         }
+        self.workoutDict["type"]!["device id"]!.append(deviceID)
+        self.motionDict["type"]!["device id"]!.append(deviceID)
+        self.ecgDict["type"]!["device id"]!.append(deviceID)
     }
     
     override func didDeactivate() {
@@ -437,7 +448,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
 //    }
     
     func postHTTP2(info: Dictionary<String, Any>, url: URL) {
-        
+        //TODO: Return response code
             //create the session object
             let session = URLSession.shared
 
@@ -520,9 +531,10 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
 //    }
     
     func sendAndSave(){
+        //TODO: only erase data if return code is successful
         self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
         self.postHTTP2(info: self.motionDict, url: self.serverUrl)
-        self.motionDict = ["type": ["type":["motion"]],
+        self.motionDict = ["type": ["type":["motion"], "device id": [deviceID]],
                              "data": ["accx":[],
                                       "accy":[],
                                       "accz":[],
@@ -533,7 +545,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                                       "grvy":[],
                                       "grvz":[],
                                       "timestamp":[]]]
-        self.workoutDict = ["type": ["type": ["workout"]],
+        self.workoutDict = ["type": ["type": ["health"], "device id": [deviceID]],
                             "data": ["Heart Rate": [],
                                      "Active Energy Burned": [],
                                      "Basal Energy Burned": [],
@@ -546,7 +558,9 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                                      "Blood Pressure Systolic": [],
                                      "Blood Pressure Dyastolic": [],
                                      "Respiratory Rate": [],
-                                     "Distance Walked": []]]
+                                     "Distance Walked": []
+                                    ]]
+        print("[HTTP]: Sent motion and health data")
         return
     }
     
