@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="19529" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
-    <device id="watch38"/>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="20037" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="q6C-Um-cR8">
+    <device id="watch45"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="19514"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="20006"/>
     </dependencies>
     <scenes>
         <!--Interface Controller-->
@@ -36,6 +36,102 @@
                 </controller>
             </objects>
             <point key="canvasLocation" x="-16" y="-6"/>
+        </scene>
+        <!--Interface Controller-->
+        <scene sceneID="83o-3u-1n7">
+            <objects>
+                <controller id="MVh-lL-zEC">
+                    <items>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="RRT-Pq-EmP">
+                            <items>
+                                <label width="1" height="1" alignment="center" verticalAlignment="center" text="Te has caido?" textAlignment="center" id="pSa-nH-prg">
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle2"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" alignment="left" id="PHu-2A-aqw">
+                            <items>
+                                <label alignment="left" text="Hemos detectado una caida. Si no nos dices si estas bien avisaremos a un companero tras 10 segundos." textAlignment="left" numberOfLines="6" minimumScaleFactor="0.10000000000000001" id="szJ-21-N76">
+                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" height="0.25" alignment="left" verticalAlignment="bottom" id="seJ-Hd-ETB">
+                            <items>
+                                <group width="0.5" height="1" alignment="left" id="KtB-Vv-3Gx">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Necesito ayuda" id="HCP-RU-fA3">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                        </button>
+                                    </items>
+                                </group>
+                                <group width="0.5" height="1" alignment="left" id="Dj7-wQ-nnZ">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Estoy bien" id="AFd-7j-apH">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                        </button>
+                                    </items>
+                                </group>
+                            </items>
+                        </group>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="287" y="1"/>
+        </scene>
+        <!--Interface Controller-->
+        <scene sceneID="dbS-Cw-13d">
+            <objects>
+                <controller id="q6C-Um-cR8">
+                    <items>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="vGw-vz-j5a">
+                            <items>
+                                <label width="1" height="1" alignment="center" verticalAlignment="center" text="Descansa" textAlignment="center" id="fa9-0L-Yab">
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle2"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" alignment="left" id="Mrq-EW-jBB">
+                            <items>
+                                <label alignment="left" text="Hemos detectado que puedes estar cerca de sufrir un golpe de calor. Tomate un breve descanso y bebe algo." textAlignment="left" numberOfLines="5" minimumScaleFactor="0.10000000000000001" id="SKx-8a-s6T">
+                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" height="0.25" alignment="left" verticalAlignment="bottom" id="G7X-ky-RP1">
+                            <items>
+                                <group width="0.5" height="1" alignment="left" id="mzW-R8-t1p">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Quiero seguir" id="brL-Je-qCL">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                        </button>
+                                    </items>
+                                </group>
+                                <group width="0.5" height="1" alignment="left" id="Xxv-WD-fi6">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Voy a descansar" id="00D-Vc-bJn">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="0.74083227040816324" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                        </button>
+                                    </items>
+                                </group>
+                            </items>
+                        </group>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="576" y="1"/>
         </scene>
     </scenes>
 </document>
