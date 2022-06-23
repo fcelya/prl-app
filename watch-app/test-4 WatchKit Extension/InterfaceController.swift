@@ -597,4 +597,25 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         }
     }
 }
+
+
+class InterfaceController2: WKInterfaceController{
     
+    override func awake(withContext context: Any?) {
+        // Configure interface objects here.
+        super.awake(withContext: context)
+    }
+    
+    
+    override func willActivate() {
+        // This method is called when watch view controller is about to be visible to user
+    }
+    
+    override func didDeactivate() {
+        // This method is called when watch view controller is no longer visible
+    }
+    
+    @IBAction func button() {
+        pushController(withName: "caida", context: nil)
+    }
+}

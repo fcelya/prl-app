@@ -6,10 +6,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="20006"/>
     </dependencies>
     <scenes>
-        <!--Interface Controller-->
+        <!--main-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller id="AgC-eL-Hgc" customClass="InterfaceController" customModule="test_4_WatchKit_App" customModuleProvider="target">
+                <controller identifier="main" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="test_4_WatchKit_App" customModuleProvider="target">
                     <items>
                         <group width="1" height="0.5" alignment="left" id="lME-PD-GI7">
                             <items>
@@ -37,10 +37,10 @@
             </objects>
             <point key="canvasLocation" x="-16" y="-6"/>
         </scene>
-        <!--Interface Controller-->
+        <!--caida-->
         <scene sceneID="83o-3u-1n7">
             <objects>
-                <controller id="MVh-lL-zEC">
+                <controller identifier="caida" id="MVh-lL-zEC">
                     <items>
                         <group width="1" height="0.20000000000000001" alignment="left" id="RRT-Pq-EmP">
                             <items>
@@ -85,10 +85,10 @@
             </objects>
             <point key="canvasLocation" x="287" y="1"/>
         </scene>
-        <!--Interface Controller-->
+        <!--descansa-->
         <scene sceneID="dbS-Cw-13d">
             <objects>
-                <controller id="q6C-Um-cR8">
+                <controller identifier="descansa" id="q6C-Um-cR8" customClass="InterfaceController2" customModule="test_4_WatchKit_Extension">
                     <items>
                         <group width="1" height="0.20000000000000001" alignment="left" id="vGw-vz-j5a">
                             <items>
@@ -123,6 +123,9 @@
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="0.74083227040816324" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                             <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                            <connections>
+                                                <action selector="button" destination="q6C-Um-cR8" id="eAW-aY-JS1"/>
+                                            </connections>
                                         </button>
                                     </items>
                                 </group>
@@ -131,7 +134,7 @@
                     </items>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="576" y="1"/>
+            <point key="canvasLocation" x="609" y="18"/>
         </scene>
     </scenes>
 </document>
