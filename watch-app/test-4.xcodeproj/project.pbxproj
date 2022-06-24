@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		99D9C31B286664D30089709C /* UtilHTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99D9C31A286664D30089709C /* UtilHTTP.swift */; };
+		99D9C31D286665CA0089709C /* UtilHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99D9C31C286665CA0089709C /* UtilHealth.swift */; };
 		D47E163F27BC4C7A0098F6D3 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D47E163E27BC4C7A0098F6D3 /* HealthKit.framework */; };
 		D49F04A127BC129200103EC4 /* test-4 WatchKit App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D49F04A027BC129200103EC4 /* test-4 WatchKit App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D49F04A727BC129200103EC4 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D49F04A527BC129200103EC4 /* Interface.storyboard */; };
@@ -61,6 +63,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		99D9C31A286664D30089709C /* UtilHTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilHTTP.swift; sourceTree = "<group>"; };
+		99D9C31C286665CA0089709C /* UtilHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilHealth.swift; sourceTree = "<group>"; };
 		D47E163C27BC4C7A0098F6D3 /* test-4 WatchKit Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "test-4 WatchKit Extension.entitlements"; sourceTree = "<group>"; };
 		D47E163E27BC4C7A0098F6D3 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS8.3.sdk/System/Library/Frameworks/HealthKit.framework; sourceTree = DEVELOPER_DIR; };
 		D49F049C27BC129200103EC4 /* test-4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "test-4.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -131,6 +135,8 @@
 				D49F04B327BC129500103EC4 /* InterfaceController.swift */,
 				D49F04B527BC129500103EC4 /* ExtensionDelegate.swift */,
 				D49F04B727BC129500103EC4 /* ComplicationController.swift */,
+				99D9C31A286664D30089709C /* UtilHTTP.swift */,
+				99D9C31C286665CA0089709C /* UtilHealth.swift */,
 				D49F04B927BC129700103EC4 /* Assets.xcassets */,
 				D49F04BB27BC129700103EC4 /* Info.plist */,
 			);
@@ -267,6 +273,8 @@
 				D49F04B627BC129500103EC4 /* ExtensionDelegate.swift in Sources */,
 				D49F04B427BC129500103EC4 /* InterfaceController.swift in Sources */,
 				D49F04B827BC129500103EC4 /* ComplicationController.swift in Sources */,
+				99D9C31B286664D30089709C /* UtilHTTP.swift in Sources */,
+				99D9C31D286665CA0089709C /* UtilHealth.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
