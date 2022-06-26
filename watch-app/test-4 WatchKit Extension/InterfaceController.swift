@@ -15,6 +15,7 @@ import UIKit
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
     
     //Device configuration
+    // Si se cambia cambiar tambien en InterfaceControllerAlert
     let deviceID = "test_dev2"
     
     // INTERFACE
@@ -41,7 +42,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     //Server url
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/0l8up-1651632300/post")!
-    let serverUrl: URL = URL(string: "http://34.200.242.230/post")!
+    let serverUrl: URL = URL(string: "http://3.231.213.109/")!
+    
     
     
     //MOVEMENT
@@ -102,23 +104,29 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
-            if self.appState == possibleAppStates.activeWorkout{
-                if let data = self.motion.deviceMotion{
-                    print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
-                    self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
-                    self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
-                    self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
-                    self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
-                    self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
-                    self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
-                    self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
-                    self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
-                    self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
-                    self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
-                }else{
-                    print("[Motion]: No motion data available")
+            if (self.appState==possibleAppStates.activeWorkout || self.appState==possibleAppStates.activeNotWorkout){
+                let s = "http://3.231.213.109/status?device_id="+self.deviceID
+                let statusURL = URL(string: s)!
+                self.getHTTP2(url: statusURL)
+                if self.appState == possibleAppStates.activeWorkout{
+                    if let data = self.motion.deviceMotion{
+                        print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
+                        self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
+                        self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
+                        self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
+                        self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
+                        self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
+                        self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
+                        self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
+                        self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
+                        self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
+                        self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+                    }else{
+                        print("[Motion]: No motion data available")
+                    }
                 }
             }
+            
             
             //Check If workout should be stopped or activated
             switch self.appState{
@@ -398,8 +406,11 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
             }
         }
+
+    
+    
+    
     @IBAction func buttonPressed() {
-        
         switch appState {
         case .welcome:
             labelGroup.setRelativeHeight(0.5,withAdjustment: 0)
@@ -418,11 +429,13 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             startStopButton!.setTitle("Start")
             labelGroup.setRelativeHeight(0,withAdjustment: 0)
             buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+            buttonGroup.setRelativeWidth(1,withAdjustment: 0)
         case .activeNotWorkout:
             appState = possibleAppStates.welcome
             startStopButton!.setTitle("Start")
             labelGroup.setRelativeHeight(0,withAdjustment: 0)
             buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+            buttonGroup.setRelativeWidth(1,withAdjustment: 0)
         case .emergency:
             break
         case .stopped:
@@ -468,7 +481,7 @@ class InterfaceControllerWarning: WKInterfaceController{
 
 
 class InterfaceControllerAlert: WKInterfaceController{
-
+    let deviceID = "test_dev2"
     enum possibleAppStates{
         case welcome
         case activeWorkout
@@ -492,7 +505,13 @@ class InterfaceControllerAlert: WKInterfaceController{
     }
 
     @IBAction func ayudaButton() {
-        pushController(withName: "caida", context: nil)
+        //let s = "http://3.231.213.109/status?device_id="+self.deviceID
+        let s = "http://3.231.213.109/alert"
+        let alertURL = URL(string: s)!
+        let a = ["device_id":self.deviceID]
+        //self.getHTTP2(url: statusURL)
+        self.postHTTP2(info: a, url: alertURL)
+        pushController(withName: "avisando", context: nil)
     }
 
     @IBAction func bienButton() {
