@@ -512,6 +512,7 @@ class InterfaceControllerWarning: WKInterfaceController{
 
 class InterfaceControllerAlert: WKInterfaceController{
     let deviceID = "test_dev2"
+    let startTime = Int64(NSDate().timeIntervalSince1970)
     enum possibleAppStates{
         case welcome
         case activeWorkout
@@ -523,6 +524,16 @@ class InterfaceControllerAlert: WKInterfaceController{
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
         super.awake(withContext: context)
+        print("IN AWAKE")
+        if Int64(NSDate().timeIntervalSince1970) - self.startTime > 15{
+            let s = "http://3.231.213.109/alert"
+            let alertURL = URL(string: s)!
+            let a = ["device_id":self.deviceID]
+            //self.getHTTP2(url: statusURL)
+            self.postHTTP2(info: a, url: alertURL)
+            pushController(withName: "avisando", context: nil)
+            print("[Alerting]: Told server to alert supervisor")
+        }
     }
 
 
