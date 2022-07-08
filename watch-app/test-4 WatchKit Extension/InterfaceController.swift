@@ -42,7 +42,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     //Server url
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/0l8up-1651632300/post")!
-    let serverUrl: URL = URL(string: "http://3.231.213.109/")!
+    let serverUrl: URL = URL(string: "http://3.226.240.107/")!
     
     
     
@@ -105,7 +105,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
             if (self.appState==possibleAppStates.activeWorkout || self.appState==possibleAppStates.activeNotWorkout){
-                let s = "http://3.231.213.109/status?device_id="+self.deviceID
+                let s = "http://3.226.240.107/status?device_id="+self.deviceID
                 let statusURL = URL(string: s)!
                 self.getHTTP2(url: statusURL)
                 if self.appState == possibleAppStates.activeWorkout{
