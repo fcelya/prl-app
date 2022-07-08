@@ -99,12 +99,18 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         // Configure interface objects here.
         super.awake(withContext: context)
         
-        // var healthDataCollected = false
-        // TODO: Add condition that workout stops when all data has been collected
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
             if (self.appState==possibleAppStates.activeWorkout || self.appState==possibleAppStates.activeNotWorkout){
+                let fallErr: Float = 0.05
+                if let didFall = self.checkFall(err: fallErr){
+                    if didFall==false{
+                        WKInterfaceDevice.current().play(.failure)
+                        self.pushController(withName: "caida", context: nil)
+                    }
+                }
+                
                 let s = "http://3.226.240.107/status?device_id="+self.deviceID
                 let statusURL = URL(string: s)!
                 self.getHTTP2(url: statusURL)
@@ -407,7 +413,31 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             }
         }
 
-    
+    func checkFall(err: Float ) -> Bool?{
+        var fell: Bool? = nil
+        var d = self.motionDict
+        
+        if d["data"]!["accx"]!.count >= 2 {
+            fell = false
+            
+            let accx = d["data"]!["accx"]!.last as! Float
+            let accy = d["data"]!["accy"]!.last as! Float
+            let accz = d["data"]!["accz"]!.last as! Float
+            let grvx = d["data"]!["grvx"]!.last as! Float
+            let grvy = d["data"]!["grvy"]!.last as! Float
+            let grvz = d["data"]!["grvz"]!.last as! Float
+            
+            let diffx = abs((accx-grvx)/accx)
+            let diffy = abs((accy-grvy)/accy)
+            let diffz = abs((accz-grvz)/accz)
+            
+            if (diffx < err && diffy < err && diffz < err){
+                fell = true
+            }
+        }
+        
+        return fell
+    }
     
     
     @IBAction func buttonPressed() {
@@ -512,6 +542,7 @@ class InterfaceControllerAlert: WKInterfaceController{
         //self.getHTTP2(url: statusURL)
         self.postHTTP2(info: a, url: alertURL)
         pushController(withName: "avisando", context: nil)
+        print("[Alerting]: Told server to alert supervisor")
     }
 
     @IBAction func bienButton() {

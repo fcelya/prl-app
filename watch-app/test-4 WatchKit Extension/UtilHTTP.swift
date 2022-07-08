@@ -10,7 +10,6 @@ import WatchKit
 
 extension InterfaceController{
     func postHTTP2(info: Dictionary<String, Any>, url: URL) {
-        //TODO: Return response code
         //create the session object
         let session = URLSession.shared
 
@@ -44,25 +43,6 @@ extension InterfaceController{
                 //create json object from data
                 if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] {
                     print(json)
-                    // handle json...
-//                    let emerg = json["emergency"] as! String
-//                    let prefix = String(emerg.prefix(1))
-//                    switch prefix{
-//                        case "0":
-//                        break
-//                        case "1":
-//                        self.stopWorkout()
-//                        self.appState = possibleAppStates.welcome
-//                        WKInterfaceDevice.current().play(.failure)
-//                        self.pushController(withName: "descansa", context: nil)
-//                        case "2":
-//                        self.stopWorkout()
-//                        self.appState = possibleAppStates.welcome
-//                        WKInterfaceDevice.current().play(.failure)
-//                        self.pushController(withName: "caida", context: nil)
-//                        default:
-//                        break
-//                    }
                 }
 
             } catch let error {
