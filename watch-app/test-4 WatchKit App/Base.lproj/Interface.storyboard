@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="19529" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
-    <device id="watch38"/>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="20037" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+    <device id="watch45"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="19514"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="20006"/>
     </dependencies>
     <scenes>
-        <!--Interface Controller-->
+        <!--main-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller id="AgC-eL-Hgc" customClass="InterfaceController" customModule="test_4_WatchKit_App" customModuleProvider="target">
+                <controller identifier="main" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="test_4_WatchKit_App" customModuleProvider="target">
                     <items>
                         <group width="1" height="0.5" alignment="left" id="lME-PD-GI7">
                             <items>
@@ -19,7 +19,7 @@
                         </group>
                         <group width="1" height="0.5" alignment="left" id="VBE-pI-xOq">
                             <items>
-                                <button width="1" height="1" alignment="left" title="Welcome!" id="ldB-XR-Z3L">
+                                <button width="1" height="1" alignment="left" title="Start" id="ldB-XR-Z3L">
                                     <connections>
                                         <action selector="buttonPressed" destination="AgC-eL-Hgc" id="qKG-d3-WUI"/>
                                     </connections>
@@ -36,6 +36,167 @@
                 </controller>
             </objects>
             <point key="canvasLocation" x="-16" y="-6"/>
+        </scene>
+        <!--caida-->
+        <scene sceneID="83o-3u-1n7">
+            <objects>
+                <controller identifier="caida" id="MVh-lL-zEC" customClass="InterfaceControllerAlert" customModule="test_4_WatchKit_Extension">
+                    <items>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="RRT-Pq-EmP">
+                            <items>
+                                <label width="1" height="1" alignment="center" verticalAlignment="center" text="Te has caido?" textAlignment="center" id="pSa-nH-prg">
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle2"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" alignment="left" id="PHu-2A-aqw">
+                            <items>
+                                <label alignment="left" text="Hemos detectado una caida. Si no nos dices si estas bien avisaremos a un companero tras 10 segundos." textAlignment="left" numberOfLines="6" minimumScaleFactor="0.10000000000000001" id="szJ-21-N76">
+                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" height="0.25" alignment="left" verticalAlignment="bottom" id="seJ-Hd-ETB">
+                            <items>
+                                <group width="0.5" height="1" alignment="left" id="KtB-Vv-3Gx">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Necesito ayuda" id="HCP-RU-fA3">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                            <connections>
+                                                <action selector="ayudaButton" destination="MVh-lL-zEC" id="xZG-Gc-JOI"/>
+                                            </connections>
+                                        </button>
+                                    </items>
+                                </group>
+                                <group width="0.5" height="1" alignment="left" id="Dj7-wQ-nnZ">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Estoy bien" id="AFd-7j-apH">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                            <connections>
+                                                <action selector="bienButton" destination="MVh-lL-zEC" id="Do7-uV-VRb"/>
+                                            </connections>
+                                        </button>
+                                    </items>
+                                </group>
+                            </items>
+                        </group>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="287" y="1"/>
+        </scene>
+        <!--avisando-->
+        <scene sceneID="rH8-d9-8oc">
+            <objects>
+                <controller identifier="avisando" id="qrh-On-Ie6" customClass="InterfaceControllerAvisando" customModule="test_4_WatchKit_Extension">
+                    <items>
+                        <group width="1" height="0.5" alignment="left" id="VEq-nc-9A0">
+                            <items>
+                                <label height="1" alignment="left" text="LA AYUDA ESTA EN CAMINO" textAlignment="center" numberOfLines="2" id="z3q-RD-vYr">
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle2"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" height="0.5" alignment="left" id="SF8-2y-N1Q">
+                            <items>
+                                <button width="1" height="1" alignment="left" alpha="0.59999999999999998" title="Ya esta todo arreglado" id="T56-Ny-FTj">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <fontDescription key="font" type="system" pointSize="20"/>
+                                    <connections>
+                                        <action selector="arregladoButton" destination="qrh-On-Ie6" id="VO7-4b-CDt"/>
+                                    </connections>
+                                </button>
+                            </items>
+                        </group>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="272.68686868686871" y="340"/>
+        </scene>
+        <!--descansa-->
+        <scene sceneID="dbS-Cw-13d">
+            <objects>
+                <controller identifier="descansa" id="q6C-Um-cR8" customClass="InterfaceControllerWarning" customModule="test_4_WatchKit_Extension">
+                    <items>
+                        <group width="1" height="0.20000000000000001" alignment="left" id="vGw-vz-j5a">
+                            <items>
+                                <label width="1" height="1" alignment="center" verticalAlignment="center" text="Descansa" textAlignment="center" id="fa9-0L-Yab">
+                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleTitle2"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" alignment="left" id="Mrq-EW-jBB">
+                            <items>
+                                <label alignment="left" text="Hemos detectado que puedes estar cerca de sufrir un golpe de calor. Tomate un breve descanso y bebe algo." textAlignment="left" numberOfLines="5" minimumScaleFactor="0.10000000000000001" id="SKx-8a-s6T">
+                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <fontDescription key="font" style="UICTFontTextStyleBody"/>
+                                </label>
+                            </items>
+                        </group>
+                        <group width="1" height="0.25" alignment="left" verticalAlignment="bottom" id="G7X-ky-RP1">
+                            <items>
+                                <group width="0.5" height="1" alignment="left" id="mzW-R8-t1p">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" title="Quiero seguir" id="brL-Je-qCL">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                            <connections>
+                                                <action selector="seguirButton" destination="q6C-Um-cR8" id="HMF-GK-YZR"/>
+                                            </connections>
+                                        </button>
+                                    </items>
+                                </group>
+                                <group width="0.5" height="1" alignment="left" id="Xxv-WD-fi6">
+                                    <items>
+                                        <button width="1" height="1" alignment="left" alpha="0.59999999999999998" title="Voy a descansar" id="00D-Vc-bJn">
+                                            <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="backgroundColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="font" type="boldSystem" pointSize="17"/>
+                                            <connections>
+                                                <action selector="descansarButton" destination="q6C-Um-cR8" id="9I9-D8-MKr"/>
+                                            </connections>
+                                        </button>
+                                    </items>
+                                </group>
+                            </items>
+                        </group>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="631" y="45"/>
+        </scene>
+        <!--descansando-->
+        <scene sceneID="Eg6-U9-Deu">
+            <objects>
+                <controller identifier="descansando" id="Wh4-s7-OKt" customClass="InterfaceControllerDescansando" customModule="test_4_WatchKit_Extension">
+                    <items>
+                        <button alignment="left" id="mTf-Zz-PC8">
+                            <group key="contentGroup" width="1" height="1" alignment="left" alpha="0.40000000000000002" id="qTT-UW-dw7">
+                                <items>
+                                    <label width="1" height="1" alignment="left" text="Estoy preparado para volver al trabajo" textAlignment="center" numberOfLines="4" id="HPl-XM-54X">
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="font" style="UICTFontTextStyleTitle1"/>
+                                    </label>
+                                </items>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </group>
+                            <connections>
+                                <action selector="arregladoButton" destination="Wh4-s7-OKt" id="SIU-ek-dRV"/>
+                            </connections>
+                        </button>
+                    </items>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="601" y="330"/>
         </scene>
     </scenes>
 </document>

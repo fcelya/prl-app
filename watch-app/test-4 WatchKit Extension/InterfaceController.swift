@@ -14,12 +14,16 @@ import UIKit
 
 class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate{
     
-    let deviceID = "test_watch"
+    //Device configuration
+    // Si se cambia cambiar tambien en InterfaceControllerAlert
+    let deviceID = "test_dev2"
     
+    // INTERFACE
     @IBOutlet var startStopButton: WKInterfaceButton!
     @IBOutlet var bpmLabel: WKInterfaceLabel!
     @IBOutlet var buttonGroup: WKInterfaceGroup!
     @IBOutlet weak var labelGroup: WKInterfaceGroup!
+    var buttonText = "Start"
     
     //FLOW CONTROL
     enum possibleAppStates{
@@ -38,7 +42,8 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     //Server url
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/mz9qr-1646956188/post")!
     //let serverUrl: URL = URL(string: "https://ptsv2.com/t/0l8up-1651632300/post")!
-    let serverUrl: URL = URL(string: "http://3.236.158.98/post")!
+    let serverUrl: URL = URL(string: "http://3.226.240.107/")!
+    
     
     
     //MOVEMENT
@@ -75,47 +80,59 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                                                                    "timestamp":[]]]
 
     var workoutDict: Dictionary<String, [String: [Any]]> = ["type": ["type": ["health"], "device id":[]],
-                                                              "data": ["Heart Rate": [],
-                                                                       "Active Energy Burned": [],
-                                                                       "Basal Energy Burned": [],
-                                                                       "Apple Stand Time": [],
-                                                                       "Apple Walking Steadiness": [],
-                                                                       "Environmental Audio Exposure": [],
-                                                                       "Heart Rate Variability": [],
-                                                                       "Oxygen Saturation": [],
-                                                                       "Body Temperature": [],
-                                                                       "Blood Pressure Systolic": [],
-                                                                       "Blood Pressure Dyastolic": [],
-                                                                       "Respiratory Rate": [],
-                                                                       "Distance Walked": []
-                                                                      ]]
+          "data": ["Heart Rate": [],
+                   "Active Energy Burned": [],
+                   "Basal Energy Burned": [],
+                   "Apple Stand Time": [],
+                   "Apple Walking Steadiness": [],
+                   "Environmental Audio Exposure": [],
+                   "Heart Rate Variability": [],
+                   "Oxygen Saturation": [],
+                   "Body Temperature": [],
+                   "Blood Pressure Systolic": [],
+                   "Blood Pressure Dyastolic": [],
+                   "Respiratory Rate": [],
+                   "Distance Walked": []
+                  ]]
     
     override func awake(withContext context: Any?) {
         // Configure interface objects here.
         super.awake(withContext: context)
         
-        var healthDataCollected = false
-        // TODO: Add condition that workout stops when all data has been collected
         startMotionCollection()
         //Check for motion data
         Timer.scheduledTimer(withTimeInterval: TimeInterval(motionRefreshRate), repeats: true){_ in
-            if self.appState == possibleAppStates.activeWorkout{
-                if let data = self.motion.deviceMotion{
-                    print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
-                    self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
-                    self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
-                    self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
-                    self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
-                    self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
-                    self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
-                    self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
-                    self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
-                    self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
-                    self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
-                }else{
-                    print("[Motion]: No motion data available")
+            if (self.appState==possibleAppStates.activeWorkout || self.appState==possibleAppStates.activeNotWorkout){
+                let fallErr: Float = 0.05
+                if let didFall = self.checkFall(err: fallErr){
+                    if didFall==false{
+                        WKInterfaceDevice.current().play(.failure)
+                        self.pushController(withName: "caida", context: nil)
+                    }
+                }
+                
+                let s = "http://3.226.240.107/status?device_id="+self.deviceID
+                let statusURL = URL(string: s)!
+                self.getHTTP2(url: statusURL)
+                if self.appState == possibleAppStates.activeWorkout{
+                    if let data = self.motion.deviceMotion{
+                        print("[Motion] x: \(data.userAcceleration.x)) y: \(data.userAcceleration.y) z: \(data.userAcceleration.z)")
+                        self.motionDict["data"]!["accx"]!.append(data.userAcceleration.x)
+                        self.motionDict["data"]!["accy"]!.append(data.userAcceleration.y)
+                        self.motionDict["data"]!["accz"]!.append(data.userAcceleration.z)
+                        self.motionDict["data"]!["gyrx"]!.append(data.rotationRate.x)
+                        self.motionDict["data"]!["gyry"]!.append(data.rotationRate.y)
+                        self.motionDict["data"]!["gyrz"]!.append(data.rotationRate.z)
+                        self.motionDict["data"]!["grvx"]!.append(data.gravity.x)
+                        self.motionDict["data"]!["grvy"]!.append(data.gravity.y)
+                        self.motionDict["data"]!["grvz"]!.append(data.gravity.z)
+                        self.motionDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
+                    }else{
+                        print("[Motion]: No motion data available")
+                    }
                 }
             }
+            
             
             //Check If workout should be stopped or activated
             switch self.appState{
@@ -339,7 +356,7 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
     func initWorkout() {
         let configuration = HKWorkoutConfiguration()
         configuration.activityType = .crossTraining
-        configuration.locationType = .indoor
+        configuration.locationType = .outdoor
         
         do {
             session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
@@ -395,178 +412,35 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
             appStateChangeTime = Int64(NSDate().timeIntervalSince1970)
             }
         }
-            
-    
-    func getSendECG(){
-        //Get ECG
-        ECG = requestECG()
-        if(ECG == nil){
-            print("[ECG]: No ECG data available")
-        }else{
-            ecgDict["data"]!["ecg"]!.append(ECG!)
-            ecgDict["data"]!["timestamp"]!.append(Int64(NSDate().timeIntervalSince1970))
-            print("[Start Workout]: ECG retrieved with average HR of \(String(describing: ECG?.averageHeartRate)) and classification of \(String(describing: ECG?.classification))")
-            //Send ECG
-            DispatchQueue.main.async() {
-                self.postHTTP2(info: self.ecgDict as Dictionary<String,[String:[Any]]>, url: self.serverUrl)
-            }
-        }
-    }
-    
-//    func postHTTP(info: Dictionary<String, Any>, url: URL) {
-//
-//        do {
-//            let jsonData = try JSONSerialization.data(withJSONObject: info, options: JSONSerialization.WritingOptions.prettyPrinted)
-//
-//            var request = URLRequest(url: url)
-//            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//            request.httpMethod = "POST"
-//            request.httpBody = jsonData
-//
-//            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-//                    if let error = error {
-//                        print("error=\(String(describing: error))")
-//                        return
-//                    }
-//                    guard let httpResponse = response as? HTTPURLResponse,
-//                        (200...299).contains(httpResponse.statusCode) else {
-//                        print("error=\(String(describing: error))")
-//                        return
-//                    }
-//                    if let mimeType = httpResponse.mimeType, mimeType == "text/plain",
-//                        let data = data,
-//                        let message = String(data: data, encoding: .utf8) {
-//                        DispatchQueue.main.async {
-//                            print(message)
-//                        }
-//                    }
-//                }
-//            task.resume()
-//        } catch {
-//            print(error.localizedDescription)
-//        }
-//    }
-    
-    func postHTTP2(info: Dictionary<String, Any>, url: URL) {
-        //TODO: Return response code
-            //create the session object
-            let session = URLSession.shared
 
-            //now create the URLRequest object using the url object
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST" //set http method as POST
-
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: info, options: .prettyPrinted) // pass dictionary to nsdata object and set it as request body
-
-            } catch let error {
-                print(error.localizedDescription)
-            }
-
-            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.addValue("application/json", forHTTPHeaderField: "Accept")
-
-            //create dataTask using the session object to send data to the server
-            let task = session.dataTask(with: request, completionHandler: { data, response, error in
-
-                guard error == nil else {
-                    print("[HTTP POST]: Encountered error: \(error!)")
-                    return
-                }
-
-                guard let data = data else {
-                    return
-                }
-
-                do {
-                    //create json object from data
-                    if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] {
-                        print(json)
-                        // handle json...
-                    }
-
-                } catch let error {
-                    print(error.localizedDescription)
-                }
-            })
-            task.resume()
-        }
-    
-    
-    func requestECG() -> HKElectrocardiogram? {
-        // Create the electrocardiogram sample type.
-        let ecgType = HKObjectType.electrocardiogramType()
-        var latestECG: HKElectrocardiogram?
-
-        // Query for electrocardiogram samples
-        let ecgQuery = HKSampleQuery(sampleType: ecgType,
-                                     predicate: nil,
-                                     limit: HKObjectQueryNoLimit,
-                                     sortDescriptors: nil) { (query, samples, error) in
-            if let error = error {
-                // Handle the error here.
-                fatalError("*** An error occurred \(error.localizedDescription) ***")
-            }
-            
-            guard let ecgSamples = samples as? [HKElectrocardiogram] else {
-                fatalError("*** Unable to convert \(String(describing: samples)) to [HKElectrocardiogram] ***")
-            }
-            if (latestECG != nil){
-                latestECG = ecgSamples[0]
-            }
-            
-//            for sample in ecgSamples {
-//                 Handle the samples here.
-//
-//            }
-        }
-
-        // Execute the query.
-        healthStore.execute(ecgQuery)
-        return latestECG
-    }
-    
-//    func sendAndClean(){
-//
-//    }
-    
-    func sendAndSave(){
-        //TODO: only erase data if return code is successful
-        self.postHTTP2(info: self.workoutDict, url: self.serverUrl)
-        self.postHTTP2(info: self.motionDict, url: self.serverUrl)
-        self.motionDict = ["type": ["type":["motion"], "device id": [deviceID]],
-                             "data": ["accx":[],
-                                      "accy":[],
-                                      "accz":[],
-                                      "gyrx":[],
-                                      "gyry":[],
-                                      "gyrz":[],
-                                      "grvx":[],
-                                      "grvy":[],
-                                      "grvz":[],
-                                      "timestamp":[]]]
-        self.workoutDict = ["type": ["type": ["health"], "device id": [deviceID]],
-                            "data": ["Heart Rate": [],
-                                     "Active Energy Burned": [],
-                                     "Basal Energy Burned": [],
-                                     "Apple Stand Time": [],
-                                     "Apple Walking Steadiness": [],
-                                     "Environmental Audio Exposure": [],
-                                     "Heart Rate Variability": [],
-                                     "Oxygen Saturation": [],
-                                     "Body Temperature": [],
-                                     "Blood Pressure Systolic": [],
-                                     "Blood Pressure Dyastolic": [],
-                                     "Respiratory Rate": [],
-                                     "Distance Walked": []
-                                    ]]
-        print("[HTTP]: Sent motion and health data")
-        return
-    }
-    
+    func checkFall(err: Float ) -> Bool?{
+        var fell: Bool? = nil
+        var d = self.motionDict
         
+        if d["data"]!["accx"]!.count >= 2 {
+            fell = false
+            
+            let accx = d["data"]!["accx"]!.last as! Float
+            let accy = d["data"]!["accy"]!.last as! Float
+            let accz = d["data"]!["accz"]!.last as! Float
+            let grvx = d["data"]!["grvx"]!.last as! Float
+            let grvy = d["data"]!["grvy"]!.last as! Float
+            let grvz = d["data"]!["grvz"]!.last as! Float
+            
+            let diffx = abs((accx-grvx)/accx)
+            let diffy = abs((accy-grvy)/accy)
+            let diffz = abs((accz-grvz)/accz)
+            
+            if (diffx < err && diffy < err && diffz < err){
+                fell = true
+            }
+        }
+        
+        return fell
+    }
+    
+    
     @IBAction func buttonPressed() {
-        
         switch appState {
         case .welcome:
             labelGroup.setRelativeHeight(0.5,withAdjustment: 0)
@@ -582,14 +456,16 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
                 self.sendAndSave()
             }
             bpmLabel!.setText("---")
-            startStopButton!.setTitle("Welcome!")
+            startStopButton!.setTitle("Start")
             labelGroup.setRelativeHeight(0,withAdjustment: 0)
             buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+            buttonGroup.setRelativeWidth(1,withAdjustment: 0)
         case .activeNotWorkout:
             appState = possibleAppStates.welcome
-            startStopButton!.setTitle("Welcome!")
+            startStopButton!.setTitle("Start")
             labelGroup.setRelativeHeight(0,withAdjustment: 0)
             buttonGroup.setRelativeHeight(1,withAdjustment: 0)
+            buttonGroup.setRelativeWidth(1,withAdjustment: 0)
         case .emergency:
             break
         case .stopped:
@@ -597,4 +473,135 @@ class InterfaceController: WKInterfaceController, HKWorkoutSessionDelegate, HKLi
         }
     }
 }
+
+
+class InterfaceControllerWarning: WKInterfaceController{
     
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+    
+    override func awake(withContext context: Any?) {
+        // Configure interface objects here.
+        super.awake(withContext: context)
+    }
+    
+    
+    override func willActivate() {
+        // This method is called when watch view controller is about to be visible to user
+    }
+    
+    override func didDeactivate() {
+        // This method is called when watch view controller is no longer visible
+    }
+    
+    @IBAction func descansarButton() {
+        pushController(withName: "descansando", context: nil)
+    }
+    
+    @IBAction func seguirButton() {
+        self.popToRootController()
+    }
+
+}
+
+
+class InterfaceControllerAlert: WKInterfaceController{
+    let deviceID = "test_dev2"
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+
+    override func awake(withContext context: Any?) {
+        // Configure interface objects here.
+        super.awake(withContext: context)
+    }
+
+
+    override func willActivate() {
+        // This method is called when watch view controller is about to be visible to user
+    }
+
+    override func didDeactivate() {
+        // This method is called when watch view controller is no longer visible
+    }
+
+    @IBAction func ayudaButton() {
+        //let s = "http://3.231.213.109/status?device_id="+self.deviceID
+        let s = "http://3.231.213.109/alert"
+        let alertURL = URL(string: s)!
+        let a = ["device_id":self.deviceID]
+        //self.getHTTP2(url: statusURL)
+        self.postHTTP2(info: a, url: alertURL)
+        pushController(withName: "avisando", context: nil)
+        print("[Alerting]: Told server to alert supervisor")
+    }
+
+    @IBAction func bienButton() {
+        self.popToRootController()
+    }
+}
+
+class InterfaceControllerAvisando: WKInterfaceController{
+    
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+    
+    func awake(withContext context: Dictionary<String,Any>?) {
+        // Configure interface objects here.
+        super.awake(withContext: context)
+    }
+    
+    
+    override func willActivate() {
+        // This method is called when watch view controller is about to be visible to user
+    }
+    
+    override func didDeactivate() {
+        // This method is called when watch view controller is no longer visible
+    }
+    @IBAction func arregladoButton() {
+        self.popToRootController()
+    }
+}
+
+class InterfaceControllerDescansando: WKInterfaceController{
+    
+    enum possibleAppStates{
+        case welcome
+        case activeWorkout
+        case activeNotWorkout
+        case emergency
+        case stopped
+    }
+    
+    func awake(withContext context: Dictionary<String,Any>?) {
+        // Configure interface objects here.
+        super.awake(withContext: context)
+    }
+    
+    
+    override func willActivate() {
+        // This method is called when watch view controller is about to be visible to user
+    }
+    
+    override func didDeactivate() {
+        // This method is called when watch view controller is no longer visible
+    }
+    @IBAction func arregladoButton() {
+        self.popToRootController()
+    }
+}
